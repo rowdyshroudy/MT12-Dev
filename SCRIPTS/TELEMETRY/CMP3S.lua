@@ -96,17 +96,11 @@ local function drawVoltageImage(start_x, start_y)
   lcd.drawLine(start_x + batteryWidth - math.ceil(batteryWidth / 2), start_y + 38, start_x + batteryWidth - 1, start_y + 38, SOLID, 0)
   --Seven eighth line
   lcd.drawLine(start_x + batteryWidth - math.ceil(batteryWidth / 4), start_y + 44, start_x + batteryWidth - 1, start_y + 44, SOLID, 0)
-  -- Voltage top
-  --lcd.drawText(start_x + batteryWidth + 4, start_y + 0, "4.20v", SMLSIZE)
-  -- Voltage middle
-  --lcd.drawText(start_x + batteryWidth + 4, start_y + 24, "3.80v", SMLSIZE)
-  -- Voltage bottom
-  --lcd.drawText(start_x + batteryWidth + 4, start_y + 47, "3.40v", SMLSIZE)
 
   --Draw how full battery is
   local totalvoltage = getValue('RxBt')
-  local voltage = totalvoltage/4 -- Divide by cell count
-  voltageLow = 3.4
+  local voltage = totalvoltage/3 -- Divide by cell count
+  voltageLow = 3.3
   voltageHigh = 4.2
   voltageIncrement = ((voltageHigh - voltageLow) / 47)
   local offset = 0  -- Start from the bottom up
@@ -129,17 +123,17 @@ lcd.drawText (28,40, "CELL", INVERS)
 --Middle, top and bottom
 lcd.drawFilledRectangle(56, 10, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(56, 23, 30, 13, GREY_DEFAULT)
---lcd.drawFilledRectangle(56, 36, 30, 13, GREY_DEFAULT)
---lcd.drawRectangle(56, 49, 30, 13, GREY_DEFAULT)
+lcd.drawFilledRectangle(56, 36, 30, 13, GREY_DEFAULT)
+lcd.drawRectangle(56, 49, 30, 13, GREY_DEFAULT)
 lcd.drawText (60,13, "TIME", INVERS)
---lcd.drawText (62,40, "THR", INVERS)
+lcd.drawText (62,40, "THR", INVERS)
 --Right, top and bottom
 lcd.drawFilledRectangle(89, 10, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(89, 23, 30, 13, GREY_DEFAULT)
 lcd.drawFilledRectangle(89, 36, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(89, 49, 30, 13, GREY_DEFAULT)
-lcd.drawText (91,13, "THLIM", INVERS)
-lcd.drawText (95,39, "THR", INVERS)
+lcd.drawText (90,13, "WINCH", INVERS)
+lcd.drawText (96,39, "ACC", INVERS)
 end
 
 --RSSI
@@ -151,7 +145,7 @@ end
 --Cell voltage
 local function celldraw()
   local totalvoltage = getValue('RxBt')
-  local voltage = (totalvoltage / 4)*100
+  local voltage = (totalvoltage / 3)*100
   lcd.drawNumber (27, 52, voltage, PREC2)
   lcd.drawText (44, 52, "v", 0)
 end
@@ -166,24 +160,39 @@ end
 local function brk()
 local brkpos = getLogicalSwitchValue (0)
 if brkpos == true then
-lcd.drawText (95,52, "Dis")
+lcd.drawText (62,52, "Dis")
 end
 if brkpos == false then
-lcd.drawText (95,52, "ACT")
+lcd.drawText (62,52, "ACT")
 end
 end
 
---Throttle rate limit
-local function dmodeValue()
-local dmode = getFlightMode ()
-if dmode ==  0 then
-lcd.drawText (96,26, "50%")
+--Winch
+local function winch()
+local winch = getOutputValue (2)
+local winmix = getLogicalSwitchValue (1)
+if winch >  0 then
+lcd.drawText (95,26, "Out")
 end
-if dmode == 1 then
-lcd.drawText (96,26, "75%")
+if winch < 0 then
+lcd.drawText (98,26, "In")
 end
-if dmode == 2 then
-lcd.drawText (94,26, "100%")
+if winch == 0 then
+lcd.drawText (95,26, "Dis")
+end
+if winmix == false then
+lcd.drawText (95,26, "ACT")
+end
+end
+
+--Cruise control
+local function acc()
+local accpos = getLogicalSwitchValue (4)
+if accpos == true then
+lcd.drawText (95,52, "SET")
+end
+if accpos == false then
+lcd.drawText (95,52, "Off")
 end
 end
 
@@ -207,7 +216,8 @@ local function run(event)
   drawTime()
   drawVoltageImage(3, 10)
   drawtables()
-  dmodeValue()
+  winch()
+  acc()
   celldraw()
   brk()
   TheFinalCountDown()

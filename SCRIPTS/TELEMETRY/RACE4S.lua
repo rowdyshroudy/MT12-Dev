@@ -124,69 +124,81 @@ lcd.drawFilledRectangle(23, 10, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(23, 23, 30, 13, GREY_DEFAULT)
 lcd.drawFilledRectangle(23, 36, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(23, 49, 30, 13, GREY_DEFAULT)
-lcd.drawText (27,13, "RSSI", INVERS,SMLSIZE)
-lcd.drawText (28,40, "CELL", INVERS)
+lcd.drawText (27,13, "CELL", INVERS,SMLSIZE)
+lcd.drawText (29,39, "THR", INVERS)
 --Middle, top and bottom
 lcd.drawFilledRectangle(56, 10, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(56, 23, 30, 13, GREY_DEFAULT)
---lcd.drawFilledRectangle(56, 36, 30, 13, GREY_DEFAULT)
---lcd.drawRectangle(56, 49, 30, 13, GREY_DEFAULT)
-lcd.drawText (60,13, "TIME", INVERS)
---lcd.drawText (62,40, "THR", INVERS)
+lcd.drawFilledRectangle(56, 36, 30, 13, GREY_DEFAULT)
+lcd.drawRectangle(56, 49, 30, 13, GREY_DEFAULT)
+lcd.drawText (62,13, "ESC", INVERS)
+lcd.drawText (62,39, "BRK", INVERS)
 --Right, top and bottom
 lcd.drawFilledRectangle(89, 10, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(89, 23, 30, 13, GREY_DEFAULT)
 lcd.drawFilledRectangle(89, 36, 30, 13, GREY_DEFAULT)
 lcd.drawRectangle(89, 49, 30, 13, GREY_DEFAULT)
-lcd.drawText (91,13, "THLIM", INVERS)
-lcd.drawText (95,39, "THR", INVERS)
-end
-
---RSSI
-local function rssiNum()
-  --local signalStr = getRSSI()
-  lcd.drawNumber (34, 26, rssi)
+lcd.drawText (93,13, "TIME", INVERS)
+lcd.drawText (95,39, "STR", INVERS)
 end
 
 --Cell voltage
 local function celldraw()
   local totalvoltage = getValue('RxBt')
   local voltage = (totalvoltage / 4)*100
-  lcd.drawNumber (27, 52, voltage, PREC2)
-  lcd.drawText (44, 52, "v", 0)
+  lcd.drawNumber (27, 26, voltage, PREC2)
+  lcd.drawText (44, 26, "v", 0)
 end
 
---Course  timer
-local function TheFinalCountDown()
-  local compTime = getValue ("timer1")
-  lcd.drawTimer (60, 26, compTime)
+--Throttle rate
+local function thrValue()
+local thrdr = getValue("gvar1")
+if thrdr == 100 then
+lcd.drawText (30,52, thrdr)
+end
+if thrdr < 100 then
+lcd.drawText (33,52, thrdr)
+end
 end
 
 --Disable throttle
-local function brk()
+local function esc()
 local brkpos = getLogicalSwitchValue (0)
 if brkpos == true then
-lcd.drawText (95,52, "Dis")
+lcd.drawText (62,26, "Dis")
 end
 if brkpos == false then
-lcd.drawText (95,52, "ACT")
+lcd.drawText (62,26, "ACT")
 end
 end
 
---Throttle rate limit
-local function dmodeValue()
-local dmode = getFlightMode ()
-if dmode ==  0 then
-lcd.drawText (96,26, "50%")
+--Brake rate
+local function brkValue()
+local brkdr = getValue("gvar2")
+if brkdr == 100 then
+lcd.drawText (63,52, brkdr)
 end
-if dmode == 1 then
-lcd.drawText (96,26, "75%")
-end
-if dmode == 2 then
-lcd.drawText (94,26, "100%")
+if brkdr < 100 then
+lcd.drawText (66,52, brkdr)
 end
 end
 
+--Race timer
+local function TheFinalCountDown()
+  local compTime = getValue ("timer1")
+  lcd.drawTimer (93, 26, compTime)
+end
+
+--Steering rate
+local function strValue()
+local strdr = getValue("gvar3")
+if strdr == 100 then
+lcd.drawText (96,52, strdr)
+end
+if strdr < 100 then
+lcd.drawText (99,52, strdr)
+end
+end
 
 local function gatherInput(event)
   rssi = getRSSI()
@@ -207,11 +219,12 @@ local function run(event)
   drawTime()
   drawVoltageImage(3, 10)
   drawtables()
-  dmodeValue()
   celldraw()
-  brk()
+  thrValue()
+  esc()
+  brkValue()
   TheFinalCountDown()
-  rssiNum()
+  strValue()
 end
 
 local function init_func()
