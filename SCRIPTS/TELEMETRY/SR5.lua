@@ -189,10 +189,10 @@ end
 local function acc()
 local accpos = getLogicalSwitchValue (4)
 if accpos == true then
-lcd.drawText (95,52, "SET")
+lcd.drawText (96,52, "SET")
 end
 if accpos == false then
-lcd.drawText (95,52, "Off")
+lcd.drawText (96,52, "Off")
 end
 end
 
